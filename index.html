@@ -1,706 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SlimeType - Endless Typing Practice</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            background: #1e1e1e;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 3rem;
-            color: #a8e6cf;
-            margin-bottom: 10px;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-bottom: 30px;
-            font-size: 1.5rem;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #a8e6cf;
-        }
-
-        .typing-area {
-            position: relative;
-            background: #2d2d2d;
-            padding: 30px;
-            border-radius: 10px;
-            min-height: 200px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .words {
-            font-size: 1.8rem;
-            line-height: 2.5rem;
-            letter-spacing: 0.1rem;
-            user-select: none;
-        }
-
-        .word {
-            display: inline-block;
-            margin-right: 0.5rem;
-            position: relative;
-        }
-
-        .letter {
-            display: inline-block;
-        }
-
-        .letter.correct {
-            color: #e0e0e0;
-        }
-
-        .letter.incorrect {
-            color: #ff8e8e;
-        }
-
-        .letter.extra {
-            color: #ff8e8e;
-            background: rgba(255, 142, 142, 0.2);
-        }
-
-        .word.current {
-            background: rgba(168, 230, 207, 0.2);
-            border-radius: 3px;
-        }
-
-        .caret {
-            position: absolute;
-            width: 2px;
-            height: 2rem;
-            background: #a8e6cf;
-            animation: pulse 1.5s infinite ease-in-out;
-            pointer-events: none;
-            transition: left 0.1s ease-out, top 0.1s ease-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-                transform: scaleY(1);
-            }
-            50% {
-                opacity: 0.3;
-                transform: scaleY(1.1);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .results {
-            display: none;
-            text-align: center;
-            margin-top: 30px;
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        .results h2 {
-            font-size: 2.5rem;
-            color: #a8e6cf;
-            margin-bottom: 20px;
-        }
-
-        .result-stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .result-stat {
-            text-align: center;
-        }
-
-        .result-stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #e0e0e0;
-        }
-
-        .result-stat-label {
-            font-size: 1rem;
-            color: #888;
-        }
-
-        #input-field {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .restart-btn {
-            display: block;
-            margin: 0 auto;
-            padding: 15px 40px;
-            background: #a8e6cf;
-            color: #1e1e1e;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .restart-btn:hover {
-            background: #b7f4d7;
-            transform: translateY(-2px);
-        }
-
-        .controls-hint {
-            text-align: center;
-            margin-top: 20px;
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        .hidden {
-            display: none;
-        }
-        
-        .help-text {
-            text-align: center;
-            color: #888;
-            font-size: 0.9rem;
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(45, 45, 45, 0.7);
-            border-radius: 5px;
-            max-width: 600px;
-            margin: 0 auto 20px;
-        }
-        
-        .help-text strong {
-            color: #a8e6cf;
-        }
-        
-        .attribution {
-            text-align: center;
-            color: #666;
-            font-size: 0.8rem;
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-            width: 100%;
-        }
-        
-        .error-message {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ff6b6b;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 1000;
-        }
-        
-        .error-message.show {
-            opacity: 1;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>slimetype</title>
+  <script type="module" crossorigin src="/assets/index-CQfrLt7a.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cqrlt4rv.css">
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>slimetype</h1>
-        </header>
-
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-label">WPM</div>
-                <div class="stat-value" id="wpm">0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">ACCURACY</div>
-                <div class="stat-value" id="accuracy">100%</div>
-            </div>
-        </div>
-
-        <div class="help-text">
-            Type the words as they appear. Press <strong>Enter</strong> to skip. <strong>Backspace</strong> to correct.
-        </div>
-
-        <div class="typing-area">
-            <div class="words" id="words"></div>
-            <input type="text" id="input-field" autofocus>
-            <div class="caret" id="caret"></div>
-        </div>
-
-        <button class="restart-btn" id="restart-btn">Restart</button>
-
-        <div class="results" id="results">
-            <h2>Test Complete!</h2>
-            <div class="result-stats">
-                <div class="result-stat">
-                    <div class="result-stat-value" id="result-wpm">0</div>
-                    <div class="result-stat-label">WPM</div>
-                </div>
-                <div class="result-stat">
-                    <div class="result-stat-value" id="result-accuracy">0%</div>
-                    <div class="result-stat-label">Accuracy</div>
-                </div>
-                <div class="result-stat">
-                    <div class="result-stat-value" id="result-characters">0</div>
-                    <div class="result-stat-label">Characters</div>
-                </div>
-            </div>
-            <button class="restart-btn" id="new-test-btn">New Test</button>
-            <div class="controls-hint">
-                Press <strong>Enter</strong> for new test • Press <strong>Tab</strong> anytime for new words
-            </div>
-        </div>
-        
-        <div class="attribution">
-            Created with ❤️ by Maxwell, Qwen3-coder and Kimi-K2 😺
-        </div>
+  <div class="container">
+    <div class="config-bar">
+      <div class="config-group" id="word-count-selector">
+        <button class="config-btn active" data-mode="words" data-value="25">25</button>
+        <button class="config-btn" data-mode="words" data-value="50">50</button>
+        <button class="config-btn" data-mode="words" data-value="100">100</button>
+      </div>
+      <div class="config-divider"></div>
+      <div class="config-group" id="timed-group">
+        <button class="config-btn" data-mode="timed" id="timed-btn">time</button>
+      </div>
+      <div class="config-group" id="time-selector" style="display: none;">
+        <button class="config-btn" data-type="time" data-value="15">15s</button>
+        <button class="config-btn" data-type="time" data-value="30">30s</button>
+        <button class="config-btn" data-type="time" data-value="60">60s</button>
+        <button class="config-btn" data-type="time" data-value="120">120s</button>
+      </div>
+      <div class="config-divider"></div>
+      <div class="config-group" id="endless-group">
+        <button class="config-btn" data-mode="endless">endless</button>
+      </div>
     </div>
-    
-    <div class="error-message" id="error-message">Space in middle of word = error!</div>
 
-    <script>
-        const WORDS = [
-            'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i',
-            'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at',
-            'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she',
-            'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their',
-            'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go',
-            'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know',
-            'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them',
-            'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over',
-            'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work',
-            'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these',
-            'give', 'day', 'most', 'us', 'is', 'was', 'are', 'been', 'has', 'had',
-            'were', 'said', 'getting', 'made', 'find', 'where', 'much', 'too',
-            'very', 'still', 'being', 'going', 'why', 'before', 'never', 'here',
-            'more', 'code', 'program', 'function', 'variable', 'loop', 'array',
-            'object', 'method', 'class', 'return', 'true', 'false', 'null', 'undefined'
-        ];
+    <header>
+      <div class="logo">slimetype</div>
+      <div class="stats">
+        <div class="stat" id="progress-stat">
+          <div class="stat-label">Words</div>
+          <div class="stat-value" id="timer">0/25</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Speed</div>
+          <div class="stat-value" id="wpm">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Acc</div>
+          <div class="stat-value" id="accuracy">100%</div>
+        </div>
+      </div>
+    </header>
 
-        const state = {
-            words: [],
-            currentWordIndex: 0,
-            currentLetterIndex: 0,
-            typedHistory: [],
-            isActive: false,
-            startTime: null,
-            wordStates: [], // Track typed value and completion status per word
-            errors: 0
-        };
+    <div class="typing-area">
+      <div class="words" id="words"></div>
+      <input type="text" id="input-field" autofocus>
+      <div class="caret" id="caret"></div>
+    </div>
 
-        const wordsEl = document.getElementById('words');
-        const inputField = document.getElementById('input-field');
-        const caretEl = document.getElementById('caret');
-        const wpmEl = document.getElementById('wpm');
-        const accuracyEl = document.getElementById('accuracy');
-        const restartBtn = document.getElementById('restart-btn');
-        const resultsEl = document.getElementById('results');
-        const resultWpmEl = document.getElementById('result-wpm');
-        const resultAccuracyEl = document.getElementById('result-accuracy');
-        const resultCharactersEl = document.getElementById('result-characters');
-        const newTestBtn = document.getElementById('new-test-btn');
-        const errorMessage = document.getElementById('error-message');
+    <div class="help-text">
+      <kbd>tab</kbd> to restart
+    </div>
 
-        function generateWords(count = 100) {
-            const words = [];
-            for (let i = 0; i < count; i++) {
-                words.push(WORDS[Math.floor(Math.random() * WORDS.length)]);
-            }
-            return words;
-        }
+    <button class="restart-btn" id="restart-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" />
+        <path d="M3 3v9h9" />
+      </svg>
+      Restart Test
+    </button>
 
-        function initializeTest() {
-            state.words = generateWords();
-            state.currentWordIndex = 0;
-            state.currentLetterIndex = 0;
-            state.typedHistory = [];
-            state.isActive = false;
-            state.startTime = null;
-            state.wordStates = state.words.map(() => ({ typed: '', completed: false }));
-            state.errors = 0;
+    <div class="results" id="results">
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="result-stat-label">Speed</div>
+          <div class="result-stat-value" id="result-wpm">0</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-label">Accuracy</div>
+          <div class="result-stat-value" id="result-accuracy">0%</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-label">Characters</div>
+          <div class="result-stat-value" id="result-characters">0</div>
+        </div>
+      </div>
+      <button class="restart-btn" id="new-test-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        Next Test
+      </button>
+      <div class="controls-hint">
+        <kbd>tab</kbd> to restart
+      </div>
+    </div>
 
-            wordsEl.innerHTML = '';
-            state.words.forEach((word, wordIndex) => {
-                const wordEl = document.createElement('div');
-                wordEl.className = 'word';
-                wordEl.dataset.wordIndex = wordIndex;
-                
-                word.split('').forEach((letter, letterIndex) => {
-                    const letterEl = document.createElement('span');
-                    letterEl.className = 'letter';
-                    letterEl.textContent = letter;
-                    letterEl.dataset.letterIndex = letterIndex;
-                    wordEl.appendChild(letterEl);
-                });
-                
-                wordsEl.appendChild(wordEl);
-            });
+    <div class="attribution">
+      Created with ❤️ by Maxwell, Qwen3-coder, Kimi-K2, and Antigravity 😺
+    </div>
+  </div>
 
-            document.querySelector('.word').classList.add('current');
-            updateCaret();
-            resultsEl.style.display = 'none';
-            restartBtn.style.display = 'block';
-            inputField.value = '';
-            inputField.focus();
-            
-            // Remove post-test controls if they exist
-            document.removeEventListener('keydown', handlePostTestControls);
-        }
-
-        function updateCaret() {
-            const currentWord = document.querySelector('.word.current');
-            if (!currentWord) return;
-            
-            const currentLetter = currentWord.querySelector(`.letter[data-letter-index="${state.currentLetterIndex}"]`);
-            const wordRect = currentWord.getBoundingClientRect();
-            const typingAreaRect = document.querySelector('.typing-area').getBoundingClientRect();
-            
-            if (currentLetter) {
-                const letterRect = currentLetter.getBoundingClientRect();
-                caretEl.style.left = `${letterRect.left - typingAreaRect.left}px`;
-                caretEl.style.top = `${letterRect.top - typingAreaRect.top}px`;
-            } else {
-                caretEl.style.left = `${wordRect.right - typingAreaRect.left}px`;
-                caretEl.style.top = `${wordRect.top - typingAreaRect.top}px`;
-            }
-        }
-
-        function calculateWPM() {
-            if (!state.isActive || !state.startTime) return 0;
-            const timeElapsed = (Date.now() - state.startTime) / 1000 / 60;
-            if (timeElapsed === 0) return 0;
-            
-            // Calculate total characters typed across all words
-            let totalChars = 0;
-            for (let i = 0; i <= state.currentWordIndex; i++) {
-                const typed = state.wordStates[i]?.typed || '';
-                totalChars += Math.max(typed.length, state.words[i].length);
-            }
-            
-            const wordsTyped = totalChars / 5;
-            return Math.round(wordsTyped / timeElapsed);
-        }
-
-        function calculateAccuracy() {
-            let totalChars = 0;
-            let correctChars = 0;
-            
-            // Count all words including current
-            for (let i = 0; i <= state.currentWordIndex; i++) {
-                const typedValue = state.wordStates[i]?.typed || '';
-                const expectedWord = state.words[i];
-                
-                if (!expectedWord) continue;
-                
-                // Count correct characters up to min length
-                const minLength = Math.min(typedValue.length, expectedWord.length);
-                for (let j = 0; j < minLength; j++) {
-                    totalChars++;
-                    if (typedValue[j] === expectedWord[j]) {
-                        correctChars++;
-                    }
-                }
-                
-                // Count extra characters as incorrect
-                if (typedValue.length > expectedWord.length) {
-                    totalChars += typedValue.length - expectedWord.length;
-                }
-                
-                // Count missing characters as incorrect (only for completed words)
-                if (i < state.currentWordIndex || state.wordStates[i].completed) {
-                    if (expectedWord.length > typedValue.length) {
-                        totalChars += expectedWord.length - typedValue.length;
-                    }
-                }
-            }
-            
-            // Include errors in accuracy calculation
-            totalChars += state.errors;
-            
-            return totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
-        }
-
-        function updateStats() {
-            wpmEl.textContent = calculateWPM();
-            accuracyEl.textContent = `${calculateAccuracy()}%`;
-        }
-
-        function updateWordDisplay(wordIndex, typedValue) {
-            const wordEl = document.querySelector(`.word[data-word-index="${wordIndex}"]`);
-            if (!wordEl) return;
-            
-            const expectedWord = state.words[wordIndex];
-            
-            // Clear all previous classes and extra letters
-            wordEl.querySelectorAll('.letter').forEach(letter => {
-                letter.classList.remove('correct', 'incorrect');
-            });
-            wordEl.querySelectorAll('.letter.extra').forEach(letter => letter.remove());
-            
-            // Update letters based on typed value
-            for (let i = 0; i < typedValue.length; i++) {
-                const letterEl = wordEl.querySelector(`.letter[data-letter-index="${i}"]`);
-                
-                if (letterEl) {
-                    // Regular letter
-                    if (typedValue[i] === expectedWord[i]) {
-                        letterEl.classList.add('correct');
-                    } else {
-                        letterEl.classList.add('incorrect');
-                    }
-                } else {
-                    // Extra letter
-                    const extraLetter = document.createElement('span');
-                    extraLetter.className = 'letter extra';
-                    extraLetter.textContent = typedValue[i];
-                    wordEl.appendChild(extraLetter);
-                }
-            }
-            
-            // Mark remaining letters as incorrect if word is completed
-            if (state.wordStates[wordIndex].completed) {
-                for (let i = typedValue.length; i < expectedWord.length; i++) {
-                    const letterEl = wordEl.querySelector(`.letter[data-letter-index="${i}"]`);
-                    if (letterEl) {
-                        letterEl.classList.add('incorrect');
-                    }
-                }
-            }
-        }
-
-        function moveToNextWord() {
-            const currentWord = document.querySelector('.word.current');
-            if (!currentWord) return;
-            
-            // Mark current word as completed
-            state.wordStates[state.currentWordIndex].completed = true;
-            
-            // Move to next word
-            currentWord.classList.remove('current');
-            state.currentWordIndex++;
-            state.currentLetterIndex = 0;
-            
-            const nextWord = document.querySelector(`.word[data-word-index="${state.currentWordIndex}"]`);
-            if (nextWord) {
-                nextWord.classList.add('current');
-                inputField.value = state.wordStates[state.currentWordIndex].typed || '';
-                updateWordDisplay(state.currentWordIndex, inputField.value);
-                updateCaret();
-            } else {
-                endTest();
-            }
-        }
-
-        function moveToPrevWord() {
-            if (state.currentWordIndex <= 0) return;
-            
-            const currentWord = document.querySelector('.word.current');
-            if (!currentWord) return;
-            
-            // Move to previous word
-            currentWord.classList.remove('current');
-            state.currentWordIndex--;
-            
-            const prevWord = document.querySelector(`.word[data-word-index="${state.currentWordIndex}"]`);
-            if (prevWord) {
-                prevWord.classList.add('current');
-                inputField.value = state.wordStates[state.currentWordIndex].typed || '';
-                state.currentLetterIndex = inputField.value.length;
-                
-                // FIX: Reset completed flag so user can continue typing
-                state.wordStates[state.currentWordIndex].completed = false;
-                
-                updateWordDisplay(state.currentWordIndex, inputField.value);
-                updateCaret();
-                // FIX: Ensure input stays focused
-                inputField.focus();
-            }
-        }
-
-        function handleTyping(e) {
-            // Start test on first character
-            if (!state.isActive && inputField.value.length > 0) {
-                state.isActive = true;
-                state.startTime = Date.now();
-            }
-            
-            const typedValue = inputField.value;
-            
-            // Update word state
-            state.wordStates[state.currentWordIndex].typed = typedValue;
-            
-            // Update display
-            updateWordDisplay(state.currentWordIndex, typedValue);
-            
-            // Update caret position
-            state.currentLetterIndex = typedValue.length;
-            updateCaret();
-            updateStats();
-        }
-
-        function handleKeydown(e) {
-            // Skip word with Enter
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                moveToNextWord();
-                return;
-            }
-            
-            // Handle backspace at the beginning of a word
-            if (e.key === 'Backspace' && inputField.value.length === 0 && state.currentWordIndex > 0) {
-                e.preventDefault();
-                moveToPrevWord();
-                return;
-            }
-            
-            // Handle space to move to next word only if at end of word
-            if (e.key === ' ' && !state.wordStates[state.currentWordIndex].completed) {
-                e.preventDefault();
-                
-                // Check if we're at the end of the current word
-                const currentWord = state.words[state.currentWordIndex];
-                const typedValue = inputField.value;
-                
-                // If we're at the end of the word and it's correct, move to next word
-                if (typedValue.length === currentWord.length && typedValue === currentWord) {
-                    moveToNextWord();
-                } else {
-                    // Otherwise, treat space as an error
-                    state.errors++;
-                    showErrorMessage();
-                    
-                    // Add an extra character to show the error
-                    const newValue = typedValue + ' ';
-                    inputField.value = newValue;
-                    state.wordStates[state.currentWordIndex].typed = newValue;
-                    updateWordDisplay(state.currentWordIndex, newValue);
-                    state.currentLetterIndex = newValue.length;
-                    updateCaret();
-                    updateStats();
-                }
-                return;
-            }
-        }
-
-        function showErrorMessage() {
-            errorMessage.classList.add('show');
-            setTimeout(() => {
-                errorMessage.classList.remove('show');
-            }, 1500);
-        }
-
-        function endTest() {
-            state.isActive = false;
-            inputField.blur();
-            
-            const finalWPM = calculateWPM();
-            const finalAccuracy = calculateAccuracy();
-            
-            // Calculate total characters for final stats
-            let totalChars = 0;
-            for (let i = 0; i < state.words.length; i++) {
-                const typedValue = state.wordStates[i]?.typed || '';
-                totalChars += Math.max(typedValue.length, state.words[i].length);
-            }
-            
-            resultWpmEl.textContent = finalWPM;
-            resultAccuracyEl.textContent = `${finalAccuracy}%`;
-            resultCharactersEl.textContent = totalChars;
-            
-            resultsEl.style.display = 'block';
-            restartBtn.style.display = 'none';
-            
-            // Add post-test keyboard controls
-            document.addEventListener('keydown', handlePostTestControls);
-        }
-
-        function handlePostTestControls(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                initializeTest();
-            }
-        }
-
-        // Global Tab handler - works anytime
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                initializeTest();
-            }
-        });
-
-        // Event Listeners
-        inputField.addEventListener('input', handleTyping);
-        inputField.addEventListener('keydown', handleKeydown);
-
-        restartBtn.addEventListener('click', initializeTest);
-        newTestBtn.addEventListener('click', initializeTest);
-
-        // Keep input focused
-        document.addEventListener('click', () => {
-            if (!resultsEl.style.display || resultsEl.style.display === 'none') {
-                inputField.focus();
-            }
-        });
-
-        // Initialize on load
-        initializeTest();
-    </script>
 </body>
+
 </html>
