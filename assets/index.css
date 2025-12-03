@@ -477,6 +477,7 @@ header {
 }
 
 .focus-mode .config-bar,
+.focus-mode .top-menu,
 .focus-mode .attribution {
     opacity: 0;
     pointer-events: none;
